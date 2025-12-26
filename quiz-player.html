@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>اللاعب - معركة الأسئلة السريعة</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <script src="/socket.io/socket.io.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --electric-blue: #00D9FF;
+            --hot-pink: #FF006B;
+            --deep-purple: #1A0B2E;
+            --neon-green: #39FF14;
+            --warning-yellow: #FFD600;
+        }
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            background: linear-gradient(135deg, #0F0329 0%, #1A0B2E 50%, #2D1B4E 100%);
+            color: white;
+            min-height: 100vh;
+            padding: 1rem;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        h1 {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 3rem;
+            background: linear-gradient(135deg, var(--electric-blue), var(--hot-pink));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        .screen {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 2rem;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            color: white;
+            font-size: 1.2rem;
+            font-family: 'Cairo', sans-serif;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: var(--electric-blue);
+        }
+
+        input::placeholder {
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 1.2rem;
+            font-size: 1.3rem;
+            font-weight: 700;
+            font-family: 'Bebas Neue', sans-serif;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            background: linear-gradient(135deg, var(--electric-blue), var(--hot-pink));
+            color: white;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .question-box {
+            background: rgba(57, 255, 20, 0.1);
+            border: 2px solid var(--neon-green);
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .question-box h2 {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1.5rem;
+            color: var(--neon-green);
+            margin-bottom: 1rem;
+        }
+
+        .question-text {
+            font-size: 1.3rem;
+            line-height: 1.6;
+        }
+
+        .status {
+            text-align: center;
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+        }
+
+        .status.waiting {
+            background: rgba(255, 214, 0, 0.1);
+            border: 2px solid var(--warning-yellow);
+            color: var(--warning-yellow);
+        }
+
+        .status.answered {
+            background: rgba(57, 255, 20, 0.1);
+            border: 2px solid var(--neon-green);
+            color: var(--neon-green);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .your-answer {
+            background: rgba(0, 217, 255, 0.1);
+            border: 2px solid var(--electric-blue);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-top: 1rem;
+            text-align: center;
+        }
+
+        .your-answer h3 {
+            color: var(--electric-blue);
+            margin-bottom: 0.5rem;
+        }
+
+        .your-answer .answer-value {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 3rem;
+            color: var(--neon-green);
+        }
+
+        .results-box {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .results-box h3 {
+            color: var(--electric-blue);
+            margin-bottom: 1rem;
+            font-size: 1.3rem;
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .result-item:last-child {
+            border-bottom: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>معركة الأسئلة</h1>
+        </header>
+
+        <div id="joinScreen" class="screen">
+            <h2 style="text-align: center; margin-bottom: 1.5rem; font-family: 'Bebas Neue', sans-serif; font-size: 2rem;">انضم للعبة</h2>
+            <input type="text" id="playerName" placeholder="أدخل اسمك">
+            <button class="btn" onclick="joinGame()">انضم</button>
+        </div>
+
+        <div id="waitingScreen" class="screen hidden">
+            <div class="status waiting">
+                <div>⏳ في انتظار بدء اللعبة...</div>
+                <div style="font-size: 0.9rem; margin-top: 0.5rem;">مرحباً <strong id="playerNameDisplay"></strong>!</div>
+            </div>
+        </div>
+
+        <div id="gameScreen" class="screen hidden">
+            <div class="question-box">
+                <h2>السؤال <span id="questionNumber">1</span></h2>
+                <div class="question-text" id="questionText"></div>
+            </div>
+
+            <div id="answerForm">
+                <input type="text" id="answerInput" placeholder="أدخل إجابتك" inputmode="numeric">
+                <button class="btn" onclick="submitAnswer()">إرسال الإجابة</button>
+            </div>
+
+            <div id="answeredStatus" class="hidden">
+                <div class="status answered">✓ تم إرسال إجابتك بنجاح!</div>
+                <div class="your-answer">
+                    <h3>إجابتك</h3>
+                    <div class="answer-value" id="yourAnswer"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="resultsScreen" class="screen hidden">
+            <h2 style="text-align: center; margin-bottom: 1.5rem; font-family: 'Bebas Neue', sans-serif; font-size: 2rem; color: var(--neon-green);">نتائج الجولة</h2>
+            
+            <div class="results-box">
+                <h3>ترتيبك</h3>
+                <div class="result-item">
+                    <span>المركز:</span>
+                    <strong id="yourRank" style="color: var(--neon-green); font-size: 1.5rem;">-</strong>
+                </div>
+                <div class="result-item">
+                    <span>نقاط هذه الجولة:</span>
+                    <strong id="yourScore" style="color: var(--electric-blue);">-</strong>
+                </div>
+                <div class="result-item">
+                    <span>مجموع النقاط:</span>
+                    <strong id="yourTotalScore" style="color: var(--hot-pink); font-size: 1.3rem;">-</strong>
+                </div>
+            </div>
+
+            <div class="status waiting">في انتظار السؤال التالي...</div>
+        </div>
+
+        <div id="finalScreen" class="screen hidden">
+            <h2 style="text-align: center; margin-bottom: 1.5rem; font-family: 'Bebas Neue', sans-serif; font-size: 2.5rem; color: var(--neon-green);">🏆 انتهت اللعبة! 🏆</h2>
+            
+            <div class="results-box">
+                <h3>نتيجتك النهائية</h3>
+                <div class="result-item">
+                    <span>المركز النهائي:</span>
+                    <strong id="finalRank" style="color: var(--neon-green); font-size: 2rem;">-</strong>
+                </div>
+                <div class="result-item">
+                    <span>مجموع النقاط:</span>
+                    <strong id="finalScore" style="color: var(--electric-blue); font-size: 1.5rem;">-</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const socket = io();
+        let gameId = '';
+        let playerId = '';
+        let playerName = '';
+        let currentQuestionIndex = -1;
+        let questionStartTime = 0;
+
+        const urlParams = new URLSearchParams(window.location.search);
+        gameId = urlParams.get('game');
+
+        if (!gameId) {
+            alert('رابط اللعبة غير صحيح!');
+        }
+
+        function convertArabicToEnglish(str) {
+            const arabicNumbers = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
+            const englishNumbers = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+            
+            let result = str.toString();
+            for (let i = 0; i < arabicNumbers.length; i++) {
+                result = result.replace(new RegExp(arabicNumbers[i], 'g'), englishNumbers[i]);
+            }
+            return result;
+        }
+
+        function joinGame() {
+            const name = document.getElementById('playerName').value.trim();
+            if (!name) {
+                alert('الرجاء إدخال اسمك!');
+                return;
+            }
+
+            playerName = name;
+            socket.emit('join-game', { gameId, playerName });
+        }
+
+        socket.on('joined-successfully', (data) => {
+            playerId = data.playerId;
+            document.getElementById('playerNameDisplay').textContent = playerName;
+            document.getElementById('joinScreen').classList.add('hidden');
+            document.getElementById('waitingScreen').classList.remove('hidden');
+        });
+
+        socket.on('game-started', (data) => {
+            // Game is starting, wait for first question
+        });
+
+        socket.on('new-question', (data) => {
+            currentQuestionIndex = data.questionIndex;
+            questionStartTime = data.startTime;
+            showQuestion(data.question, data.questionIndex + 1);
+        });
+
+        function showQuestion(question, number) {
+            document.getElementById('waitingScreen').classList.add('hidden');
+            document.getElementById('resultsScreen').classList.add('hidden');
+            document.getElementById('gameScreen').classList.remove('hidden');
+            
+            document.getElementById('questionNumber').textContent = number;
+            document.getElementById('questionText').textContent = question;
+            document.getElementById('answerInput').value = '';
+            document.getElementById('answerInput').disabled = false;
+            document.getElementById('answerForm').classList.remove('hidden');
+            document.getElementById('answeredStatus').classList.add('hidden');
+        }
+
+        function submitAnswer() {
+            const rawAnswer = document.getElementById('answerInput').value.trim();
+            const convertedAnswer = convertArabicToEnglish(rawAnswer);
+            const answer = parseFloat(convertedAnswer);
+
+            if (isNaN(answer) || rawAnswer === '') {
+                alert('الرجاء إدخال رقم صحيح!');
+                return;
+            }
+
+            const timeTaken = Date.now() - questionStartTime;
+
+            socket.emit('submit-answer', {
+                gameId,
+                playerId,
+                questionIndex: currentQuestionIndex,
+                answer,
+                time: timeTaken
+            });
+
+            document.getElementById('answerInput').disabled = true;
+            document.getElementById('answerForm').classList.add('hidden');
+            document.getElementById('answeredStatus').classList.remove('hidden');
+            document.getElementById('yourAnswer').textContent = answer;
+        }
+
+        socket.on('round-results', (data) => {
+            const myResult = data.results[playerId];
+            if (!myResult) return;
+
+            document.getElementById('gameScreen').classList.add('hidden');
+            document.getElementById('resultsScreen').classList.remove('hidden');
+
+            document.getElementById('yourRank').textContent = myResult.rank ? '#' + myResult.rank : '-';
+            document.getElementById('yourScore').textContent = myResult.score || 0;
+            document.getElementById('yourTotalScore').textContent = myResult.totalScore || 0;
+        });
+
+        socket.on('final-results', (data) => {
+            const myRank = data.players.findIndex(p => p.name === playerName);
+            
+            document.getElementById('resultsScreen').classList.add('hidden');
+            document.getElementById('gameScreen').classList.add('hidden');
+            document.getElementById('finalScreen').classList.remove('hidden');
+
+            if (myRank !== -1) {
+                document.getElementById('finalRank').textContent = '#' + (myRank + 1);
+                document.getElementById('finalScore').textContent = data.players[myRank].totalScore;
+            }
+        });
+
+        socket.on('error', (data) => {
+            alert(data.message);
+        });
+
+        // Handle disconnect and reconnect
+        socket.on('disconnect', () => {
+            console.log('Disconnected from server');
+        });
+
+        socket.on('connect', () => {
+            console.log('Connected to server');
+            // If we were in a game, try to reconnect
+            if (playerName && gameId) {
+                socket.emit('reconnect-player', { gameId, playerName });
+            }
+        });
+
+        socket.on('reconnected-successfully', (data) => {
+            playerId = data.playerId;
+            console.log('Reconnected successfully');
+            
+            // Restore game state
+            if (data.gameState.state === 'playing') {
+                // Show appropriate screen based on current state
+            }
+        });
+    </script>
+</body>
+</html>

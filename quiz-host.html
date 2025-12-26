@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>المضيف - معركة الأسئلة السريعة</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --electric-blue: #00D9FF;
+            --hot-pink: #FF006B;
+            --deep-purple: #1A0B2E;
+            --neon-green: #39FF14;
+            --warning-yellow: #FFD600;
+        }
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            background: linear-gradient(135deg, #0F0329 0%, #1A0B2E 50%, #2D1B4E 100%);
+            color: white;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(0, 217, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(255, 0, 107, 0.1) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        h1 {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 4.5rem;
+            letter-spacing: 0.1em;
+            background: linear-gradient(135deg, var(--electric-blue), var(--hot-pink), var(--neon-green));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: rgba(255, 255, 255, 0.6);
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+        }
+
+        .screen {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 3rem;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+        }
+
+        .qr-section {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .qr-section h2 {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 2.5rem;
+            color: var(--electric-blue);
+            margin-bottom: 1.5rem;
+        }
+
+        #qrcode {
+            display: inline-block;
+            padding: 2rem;
+            background: white;
+            border-radius: 15px;
+            margin: 1rem 0;
+        }
+
+        .game-code {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 3rem;
+            color: var(--neon-green);
+            margin: 1rem 0;
+            letter-spacing: 0.2em;
+        }
+
+        .join-url {
+            color: var(--electric-blue);
+            font-size: 1.2rem;
+            word-break: break-all;
+            margin: 1rem 0;
+        }
+
+        .players-list {
+            margin: 2rem 0;
+        }
+
+        .players-list h3 {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 2rem;
+            color: var(--hot-pink);
+            margin-bottom: 1rem;
+        }
+
+        .player-item {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 1rem 1.5rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .btn {
+            padding: 1rem 2.5rem;
+            font-size: 1.1rem;
+            font-weight: 700;
+            font-family: 'Bebas Neue', sans-serif;
+            letter-spacing: 0.1em;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--electric-blue), var(--hot-pink));
+            color: white;
+            box-shadow: 0 10px 30px rgba(0, 217, 255, 0.3);
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 40px rgba(0, 217, 255, 0.5);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .timer {
+            position: fixed;
+            top: 2rem;
+            left: 2rem;
+            background: rgba(255, 214, 0, 0.2);
+            border: 2px solid var(--warning-yellow);
+            border-radius: 50%;
+            width: 100px;
+            height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 2.5rem;
+            color: var(--warning-yellow);
+            z-index: 100;
+        }
+
+        .question-section {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .question-section h2 {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 3rem;
+            color: var(--neon-green);
+            margin-bottom: 1rem;
+        }
+
+        .question-text {
+            font-size: 1.8rem;
+            line-height: 1.6;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .correct-answer {
+            font-size: 1.2rem;
+            color: var(--electric-blue);
+            font-weight: 600;
+            margin-top: 1rem;
+        }
+
+        .leaderboard-item {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .leaderboard-item:nth-child(1) { 
+            border-color: #FFD700;
+            background: rgba(255, 215, 0, 0.1);
+        }
+
+        .leaderboard-item:nth-child(2) { 
+            border-color: #C0C0C0;
+            background: rgba(192, 192, 192, 0.1);
+        }
+
+        .leaderboard-item:nth-child(3) { 
+            border-color: #CD7F32;
+            background: rgba(205, 127, 50, 0.1);
+        }
+
+        .rank {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 2.5rem;
+            width: 60px;
+            text-align: center;
+        }
+
+        .leaderboard-item:nth-child(1) .rank { color: #FFD700; }
+        .leaderboard-item:nth-child(2) .rank { color: #C0C0C0; }
+        .leaderboard-item:nth-child(3) .rank { color: #CD7F32; }
+
+        .player-info {
+            flex: 1;
+        }
+
+        .player-info h3 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .player-details {
+            display: flex;
+            gap: 2rem;
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .total-score {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 2.5rem;
+            color: var(--neon-green);
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>معركة الأسئلة السريعة</h1>
+            <div class="subtitle">لوحة تحكم المضيف</div>
+        </header>
+
+        <div id="waitingScreen" class="screen">
+            <div class="qr-section">
+                <h2>امسح الكود للانضمام</h2>
+                <div id="qrcode"></div>
+                <div class="game-code">الكود: <span id="gameCode"></span></div>
+                <div class="join-url" id="joinUrl"></div>
+            </div>
+
+            <div class="players-list">
+                <h3>اللاعبون المنضمون (<span id="playerCount">0</span>)</h3>
+                <div id="playersList"></div>
+            </div>
+
+            <div class="controls">
+                <button class="btn btn-primary" id="startBtn" onclick="startGame()" disabled>ابدأ اللعبة (يجب وجود لاعبين على الأقل)</button>
+            </div>
+        </div>
+
+        <div id="gameScreen" class="screen hidden">
+            <div class="timer" id="timer">30</div>
+            
+            <div class="question-section">
+                <h2>السؤال <span id="questionNumber">1</span> من 10</h2>
+                <div class="question-text" id="questionText"></div>
+            </div>
+
+            <div class="players-list">
+                <h3>حالة اللاعبين (<span id="answeredCount">0</span>/<span id="totalPlayers">0</span> أجابوا)</h3>
+                <div id="gamePlayersList"></div>
+            </div>
+
+            <div class="controls">
+                <button class="btn btn-primary" onclick="endRound()">إنهاء الجولة وعرض النتائج</button>
+            </div>
+        </div>
+
+        <div id="resultsScreen" class="screen hidden">
+            <div class="question-section">
+                <h2>النتائج - السؤال <span id="resultsQuestionNumber">1</span></h2>
+                <div class="question-text" id="resultsQuestion"></div>
+                <div class="correct-answer">الإجابة الصحيحة: <span id="resultsCorrectAnswer"></span></div>
+            </div>
+
+            <div class="leaderboard" id="leaderboard"></div>
+
+            <div class="controls">
+                <button class="btn btn-primary" id="nextQuestionBtn" onclick="nextQuestion()">السؤال التالي</button>
+                <button class="btn btn-primary hidden" id="showFinalBtn" onclick="showFinalResults()">عرض النتائج النهائية</button>
+            </div>
+        </div>
+
+        <div id="finalResultsScreen" class="screen hidden">
+            <div class="question-section">
+                <h2>🏆 النتائج النهائية 🏆</h2>
+                <div class="subtitle" style="margin-top: 1rem;">تم الانتهاء من جميع الأسئلة!</div>
+            </div>
+
+            <div class="leaderboard" id="finalLeaderboard"></div>
+
+            <div class="controls">
+                <button class="btn btn-primary" onclick="location.reload()">ابدأ لعبة جديدة</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const socket = io();
+        const gameId = 'GAME' + Math.random().toString(36).substr(2, 6).toUpperCase();
+        let players = [];
+        let currentQuestionIndex = 0;
+        const timeLimit = 30;
+        let timerInterval;
+        let roundStartTime;
+
+        const questions = [
+            { question: "عدد عيون النحلة؟", answer: 5 },
+            { question: "كم عدد الأحرف اللغة الانجليزية؟", answer: 26 },
+            { question: "كم عدد الكواكب المجموعة الشمسية؟", answer: 8 },
+            { question: "ما عدد حواف المكعب المستقيمة؟", answer: 12 },
+            { question: "متى وقعت الحرب العالمية الثانية؟", answer: 1939 },
+            { question: "أكبر أنواع القطط هو النمر كم كيلو وزنه يوصل؟", answer: 300 },
+            { question: "كم عدد أجنحة النحلة؟", answer: 2 },
+            { question: "كم عدد قارات العالم؟", answer: 7 },
+            { question: "في أي عام طبع أول دولار أمريكي؟", answer: 1862 },
+            { question: "كم نسبة الماء في جسم الإنسان؟", answer: 66 }
+        ];
+
+        window.onload = function() {
+            document.getElementById('gameCode').textContent = gameId;
+            
+            const hostname = window.location.hostname;
+            const port = window.location.port ? ':' + window.location.port : '';
+            const protocol = window.location.protocol;
+            const joinUrl = `${protocol}//${hostname}${port}/play?game=${gameId}`;
+            document.getElementById('joinUrl').textContent = joinUrl;
+            
+            // Generate QR Code
+            try {
+                new QRCode(document.getElementById("qrcode"), {
+                    text: joinUrl,
+                    width: 256,
+                    height: 256,
+                    colorDark: "#1A0B2E",
+                    colorLight: "#ffffff",
+                    correctLevel: QRCode.CorrectLevel.H
+                });
+            } catch(e) {
+                console.error('QR Code error:', e);
+                document.getElementById('qrcode').innerHTML = '<p style="color: #FF006B;">خطأ في تحميل QR Code</p>';
+            }
+
+            socket.emit('create-game', { gameId });
+        };
+
+        socket.on('player-joined', (data) => {
+            players = data.players;
+            updatePlayersList();
+        });
+
+        socket.on('answer-submitted', (data) => {
+            updateAnswerCount(data.totalAnswers, data.totalPlayers);
+            updateGamePlayersList();
+        });
+
+        function updatePlayersList() {
+            const playersList = document.getElementById('playersList');
+            playersList.innerHTML = '';
+            
+            players.forEach(player => {
+                const div = document.createElement('div');
+                div.className = 'player-item';
+                div.innerHTML = `<span>${player.name}</span><span style="color: var(--neon-green);">✓ متصل</span>`;
+                playersList.appendChild(div);
+            });
+
+            document.getElementById('playerCount').textContent = players.length;
+            document.getElementById('startBtn').disabled = players.length < 2;
+            document.getElementById('startBtn').textContent = players.length < 2 
+                ? 'ابدأ اللعبة (يجب وجود لاعبين على الأقل)' 
+                : 'ابدأ اللعبة';
+        }
+
+        function startGame() {
+            if (players.length < 2) return;
+            currentQuestionIndex = 0;
+            socket.emit('start-game', { gameId });
+            document.getElementById('waitingScreen').classList.add('hidden');
+            document.getElementById('gameScreen').classList.remove('hidden');
+            startRound();
+        }
+
+        function startRound() {
+            const currentQuestion = questions[currentQuestionIndex];
+            document.getElementById('questionText').textContent = currentQuestion.question;
+            document.getElementById('questionNumber').textContent = currentQuestionIndex + 1;
+            roundStartTime = Date.now();
+
+            socket.emit('start-question', {
+                gameId,
+                questionIndex: currentQuestionIndex,
+                question: currentQuestion.question,
+                startTime: roundStartTime
+            });
+
+            document.getElementById('totalPlayers').textContent = players.length;
+            document.getElementById('answeredCount').textContent = '0';
+            updateGamePlayersList();
+            startTimer();
+        }
+
+        function updateAnswerCount(answered, total) {
+            document.getElementById('answeredCount').textContent = answered;
+        }
+
+        function updateGamePlayersList() {
+            const list = document.getElementById('gamePlayersList');
+            list.innerHTML = '';
+
+            players.forEach(player => {
+                const div = document.createElement('div');
+                div.className = 'player-item';
+                const hasAnswered = player.answers && player.answers[currentQuestionIndex];
+                div.innerHTML = `
+                    <span>${player.name}</span>
+                    <span style="color: ${hasAnswered ? 'var(--neon-green)' : 'var(--warning-yellow)'};">
+                        ${hasAnswered ? '✓ أجاب' : '⏳ جاري الإجابة...'}
+                    </span>
+                `;
+                list.appendChild(div);
+            });
+        }
+
+        function startTimer() {
+            let timeLeft = timeLimit;
+            const timerElement = document.getElementById('timer');
+            timerElement.textContent = timeLeft;
+
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                timerElement.textContent = timeLeft;
+
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    endRound();
+                }
+            }, 1000);
+        }
+
+        function endRound() {
+            clearInterval(timerInterval);
+            const currentQuestion = questions[currentQuestionIndex];
+            
+            socket.emit('end-round', {
+                gameId,
+                questionIndex: currentQuestionIndex,
+                correctAnswer: currentQuestion.answer
+            });
+        }
+
+        socket.on('round-results', (data) => {
+            players = data.players;
+            showResults(data);
+        });
+
+        function showResults(data) {
+            document.getElementById('gameScreen').classList.add('hidden');
+            document.getElementById('resultsScreen').classList.remove('hidden');
+
+            const currentQuestion = questions[currentQuestionIndex];
+            document.getElementById('resultsQuestion').textContent = currentQuestion.question;
+            document.getElementById('resultsCorrectAnswer').textContent = data.correctAnswer;
+            document.getElementById('resultsQuestionNumber').textContent = currentQuestionIndex + 1;
+
+            const leaderboard = document.getElementById('leaderboard');
+            leaderboard.innerHTML = '';
+
+            const sortedPlayers = [...players]
+                .filter(p => p.answers[currentQuestionIndex] && p.answers[currentQuestionIndex].answer !== null)
+                .sort((a, b) => a.answers[currentQuestionIndex].rank - b.answers[currentQuestionIndex].rank);
+            
+            const noAnswerPlayers = players.filter(p => !p.answers[currentQuestionIndex] || p.answers[currentQuestionIndex].answer === null);
+            sortedPlayers.push(...noAnswerPlayers);
+
+            sortedPlayers.forEach((player) => {
+                const item = document.createElement('div');
+                item.className = 'leaderboard-item';
+                
+                const playerAnswer = player.answers[currentQuestionIndex];
+                const difference = playerAnswer && playerAnswer.answer !== null ? Math.abs(playerAnswer.answer - data.correctAnswer) : 'لا توجد إجابة';
+                const diffText = playerAnswer && playerAnswer.answer !== null ? `الفرق: ${difference}` : '';
+                const percentage = playerAnswer && playerAnswer.answer !== null && data.correctAnswer !== 0 
+                    ? `(${((Math.abs(playerAnswer.answer - data.correctAnswer) / Math.abs(data.correctAnswer)) * 100).toFixed(1)}% فرق)` 
+                    : '';
+
+                item.innerHTML = `
+                    <div class="rank">#${playerAnswer && playerAnswer.rank ? playerAnswer.rank : '-'}</div>
+                    <div class="player-info">
+                        <h3>${player.name}</h3>
+                        <div class="player-details">
+                            <span><strong>الإجابة:</strong> ${playerAnswer && playerAnswer.answer !== null ? playerAnswer.answer : 'غير متوفر'}</span>
+                            <span><strong>${diffText}</strong> ${percentage}</span>
+                            <span>الوقت: ${playerAnswer && playerAnswer.time !== null ? (playerAnswer.time / 1000).toFixed(2) + 'ث' : 'غير متوفر'}</span>
+                        </div>
+                    </div>
+                    <div class="total-score">
+                        <div style="font-size: 0.8rem; color: rgba(255,255,255,0.6);">الجولة</div>
+                        ${playerAnswer ? playerAnswer.score : 0}
+                        <div style="font-size: 0.8rem; color: rgba(255,255,255,0.6); margin-top: 0.5rem;">المجموع: ${player.totalScore}</div>
+                    </div>
+                `;
+                leaderboard.appendChild(item);
+            });
+
+            if (currentQuestionIndex < questions.length - 1) {
+                document.getElementById('nextQuestionBtn').classList.remove('hidden');
+                document.getElementById('showFinalBtn').classList.add('hidden');
+            } else {
+                document.getElementById('nextQuestionBtn').classList.add('hidden');
+                document.getElementById('showFinalBtn').classList.remove('hidden');
+            }
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < questions.length) {
+                document.getElementById('resultsScreen').classList.add('hidden');
+                document.getElementById('gameScreen').classList.remove('hidden');
+                startRound();
+            }
+        }
+
+        function showFinalResults() {
+            socket.emit('show-final-results', { gameId });
+            
+            document.getElementById('resultsScreen').classList.add('hidden');
+            document.getElementById('finalResultsScreen').classList.remove('hidden');
+
+            const finalLeaderboard = document.getElementById('finalLeaderboard');
+            finalLeaderboard.innerHTML = '';
+
+            const sortedPlayers = [...players].sort((a, b) => b.totalScore - a.totalScore);
+
+            sortedPlayers.forEach((player, index) => {
+                const item = document.createElement('div');
+                item.className = 'leaderboard-item';
+                
+                const firstPlaces = player.answers.filter(a => a && a.rank === 1).length;
+                const secondPlaces = player.answers.filter(a => a && a.rank === 2).length;
+                const thirdPlaces = player.answers.filter(a => a && a.rank === 3).length;
+
+                item.innerHTML = `
+                    <div class="rank">#${index + 1}</div>
+                    <div class="player-info">
+                        <h3>${player.name}</h3>
+                        <div class="player-details">
+                            <span>🥇 ${firstPlaces} مرات</span>
+                            <span>🥈 ${secondPlaces} مرات</span>
+                            <span>🥉 ${thirdPlaces} مرات</span>
+                        </div>
+                    </div>
+                    <div class="total-score">
+                        <div style="font-size: 0.8rem; color: rgba(255,255,255,0.6);">النقاط النهائية</div>
+                        ${player.totalScore}
+                    </div>
+                `;
+                finalLeaderboard.appendChild(item);
+            });
+        }
+
+        socket.on('connect_error', (error) => {
+            console.error('Connection error:', error);
+        });
+    </script>
+</body>
+</html>
