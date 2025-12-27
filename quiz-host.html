@@ -367,17 +367,126 @@
         let roundStartTime;
 
         const questions = [
-            { question: "عدد عيون النحلة؟", answer: 5 },
-            { question: "كم عدد الأحرف اللغة الانجليزية؟", answer: 26 },
-            { question: "كم عدد الكواكب المجموعة الشمسية؟", answer: 8 },
-            { question: "ما عدد حواف المكعب المستقيمة؟", answer: 12 },
-            { question: "متى وقعت الحرب العالمية الثانية؟", answer: 1939 },
-            { question: "أكبر أنواع القطط هو النمر كم كيلو وزنه يوصل؟", answer: 300 },
-            { question: "كم عدد أجنحة النحلة؟", answer: 2 },
-            { question: "كم عدد قارات العالم؟", answer: 7 },
-            { question: "في أي عام طبع أول دولار أمريكي؟", answer: 1862 },
-            { question: "كم نسبة الماء في جسم الإنسان؟", answer: 66 }
+            // جسم الإنسان
+            { question: "كم عدد عظام جسم الإنسان البالغ؟", answer: 206 },
+            { question: "كم عدد عضلات جسم الإنسان تقريبًا؟", answer: 650 },
+            { question: "كم عدد الكروموسومات عند الإنسان؟", answer: 46 },
+            { question: "كم عدد فقرات العمود الفقري؟", answer: 33 },
+            { question: "كم عدد صمامات القلب؟", answer: 4 },
+            
+            // القرآن الكريم
+            { question: "كم عدد سور القرآن الكريم؟", answer: 114 },
+            { question: "كم عدد آيات القرآن الكريم؟", answer: 6236 },
+            { question: "كم عدد أحزاب القرآن؟", answer: 60 },
+            { question: "كم عدد أجزاء القرآن؟", answer: 30 },
+            { question: "كم عدد أرباع القرآن؟", answer: 60 },
+            
+            // السياسة والعالم
+            { question: "كم عدد الدول الأعضاء في الأمم المتحدة؟", answer: 193 },
+            { question: "كم عدد دول مجموعة العشرين؟", answer: 20 },
+            { question: "كم عدد الدول العربية؟", answer: 22 },
+            { question: "كم عدد الدول التي تمتلك سلاحًا نوويًا؟", answer: 9 },
+            { question: "كم عدد الدول المطلة على البحر المتوسط؟", answer: 21 },
+            
+            // الجغرافيا
+            { question: "كم عدد محيطات العالم؟", answer: 5 },
+            { question: "كم عدد القارات حسب التقسيم الجغرافي الحديث؟", answer: 7 },
+            { question: "كم عدد الأنهار الرئيسية في قارة إفريقيا؟", answer: 5 },
+            { question: "كم عدد البحار في العالم تقريبًا؟", answer: 50 },
+            { question: "كم عدد القارات المأهولة؟", answer: 6 },
+            
+            // الفضاء
+            { question: "كم عدد كواكب المجموعة الشمسية؟", answer: 8 },
+            { question: "كم عدد الكواكب الغازية؟", answer: 4 },
+            { question: "كم عدد الكواكب الصخرية؟", answer: 4 },
+            { question: "كم عدد أقمار كوكب المريخ؟", answer: 2 },
+            { question: "كم عدد أقمار كوكب المشتري المعروفة حاليًا؟", answer: 95 },
+            
+            // الوقت
+            { question: "كم عدد دقائق اليوم الواحد؟", answer: 1440 },
+            { question: "كم عدد ثواني الساعة الواحدة؟", answer: 3600 },
+            { question: "كم عدد الساعات في الأسبوع؟", answer: 168 },
+            { question: "كم عدد الأيام في السنة الكبيسة؟", answer: 366 },
+            { question: "كم عدد الأيام في 10 سنوات ميلادية عادية؟", answer: 3650 },
+            
+            // اللغات
+            { question: "كم عدد لغات العالم تقريبًا؟", answer: 7000 },
+            { question: "كم عدد أحرف اللغة العربية؟", answer: 28 },
+            { question: "كم عدد أحرف الأبجدية الإنجليزية؟", answer: 26 },
+            { question: "كم عدد أحرف الأبجدية اليونانية؟", answer: 24 },
+            { question: "كم عدد الأحرف في اللغة العبرية؟", answer: 22 },
+            
+            // الحيوانات والحشرات
+            { question: "كم عدد عيون النحلة؟", answer: 5 },
+            { question: "كم عدد أضلاع خلية النحل؟", answer: 6 },
+            { question: "كم عدد قلوب الأخطبوط؟", answer: 3 },
+            { question: "كم عدد أرجل العنكبوت؟", answer: 8 },
+            { question: "كم عدد أسنان الإنسان البالغ؟", answer: 32 },
+            
+            // الأسنان والأعضاء
+            { question: "كم عدد الأسنان اللبنية للأطفال؟", answer: 20 },
+            { question: "كم عدد أسنان العقل؟", answer: 4 },
+            { question: "كم عدد عظام الأذن الوسطى؟", answer: 3 },
+            { question: "كم عدد غرف القلب؟", answer: 4 },
+            { question: "كم عدد الكلى في جسم الإنسان؟", answer: 2 },
+            
+            // الرياضة
+            { question: "كم عدد لاعبي فريق كرة القدم داخل الملعب؟", answer: 11 },
+            { question: "كم عدد لاعبي فريق كرة السلة؟", answer: 5 },
+            { question: "كم عدد لاعبي فريق الكرة الطائرة؟", answer: 6 },
+            { question: "كم عدد لاعبي فريق الرجبي؟", answer: 15 },
+            { question: "كم عدد أشواط مباراة كرة القدم؟", answer: 2 },
+            
+            // متنوعات
+            { question: "كم عدد مفاتيح البيانو القياسية؟", answer: 88 },
+            { question: "كم عدد قوانين نيوتن للحركة؟", answer: 3 },
+            { question: "كم عدد الكيلومترات في سباق الماراثون؟", answer: 42 },
+            { question: "كم عدد الأصفار في المليون؟", answer: 6 },
+            { question: "كم عدد الأصفار في المليار؟", answer: 9 },
+            
+            // الألوان والاتجاهات
+            { question: "كم عدد ألوان الطيف المرئي؟", answer: 7 },
+            { question: "كم عدد الألوان الأساسية في الضوء؟", answer: 3 },
+            { question: "كم عدد الجهات الأصلية؟", answer: 4 },
+            { question: "كم عدد فصول السنة؟", answer: 4 },
+            { question: "كم عدد أشهر السنة الهجرية؟", answer: 12 },
+            
+            // الدين الإسلامي
+            { question: "كم عدد الصلوات المفروضة يوميًا؟", answer: 5 },
+            { question: "كم عدد أركان الإسلام؟", answer: 5 },
+            { question: "كم عدد أركان الإيمان؟", answer: 6 },
+            { question: "كم عدد آيات سورة البقرة؟", answer: 286 },
+            { question: "كم عدد آيات سورة الفاتحة؟", answer: 7 },
+            
+            // الأشكال الهندسية
+            { question: "كم عدد أضلاع المثمن؟", answer: 8 },
+            { question: "كم عدد أضلاع السداسي؟", answer: 6 },
+            { question: "كم عدد أضلاع الخماسي؟", answer: 5 },
+            { question: "كم عدد الزوايا في الدائرة؟", answer: 0 },
+            { question: "كم عدد أضلاع النجمة الخماسية؟", answer: 10 },
+            
+            // الكون والجغرافيا
+            { question: "كم عدد أشهر الفصل الواحد؟", answer: 3 },
+            { question: "كم عدد الكواكب التي لها حلقات؟", answer: 4 },
+            { question: "كم عدد الكواكب القريبة من الشمس؟", answer: 4 },
+            { question: "كم عدد القارات في نصف الكرة الشمالي؟", answer: 4 },
+            { question: "كم عدد القارات في نصف الكرة الجنوبي؟", answer: 3 },
+            
+            // دول القارات
+            { question: "كم عدد الدول في قارة أوروبا؟", answer: 44 },
+            { question: "كم عدد الدول في قارة إفريقيا؟", answer: 54 },
+            { question: "كم عدد الدول في قارة آسيا؟", answer: 49 },
+            { question: "كم عدد الدول في قارة أمريكا الجنوبية؟", answer: 12 },
+            { question: "كم عدد الدول في قارة أمريكا الشمالية؟", answer: 23 }
         ];
+
+        // اختيار 10 أسئلة عشوائية
+        function getRandomQuestions(allQuestions, count) {
+            const shuffled = [...allQuestions].sort(() => Math.random() - 0.5);
+            return shuffled.slice(0, count);
+        }
+
+        const gameQuestions = getRandomQuestions(questions, 10);
 
         window.onload = function() {
             document.getElementById('gameCode').textContent = gameId;
@@ -444,7 +553,7 @@
         }
 
         function startRound() {
-            const currentQuestion = questions[currentQuestionIndex];
+            const currentQuestion = gameQuestions[currentQuestionIndex];
             document.getElementById('questionText').textContent = currentQuestion.question;
             document.getElementById('questionNumber').textContent = currentQuestionIndex + 1;
             roundStartTime = Date.now();
@@ -502,7 +611,7 @@
 
         function endRound() {
             clearInterval(timerInterval);
-            const currentQuestion = questions[currentQuestionIndex];
+            const currentQuestion = gameQuestions[currentQuestionIndex];
             
             socket.emit('end-round', {
                 gameId,
@@ -520,7 +629,7 @@
             document.getElementById('gameScreen').classList.add('hidden');
             document.getElementById('resultsScreen').classList.remove('hidden');
 
-            const currentQuestion = questions[currentQuestionIndex];
+            const currentQuestion = gameQuestions[currentQuestionIndex];
             document.getElementById('resultsQuestion').textContent = currentQuestion.question;
             document.getElementById('resultsCorrectAnswer').textContent = data.correctAnswer;
             document.getElementById('resultsQuestionNumber').textContent = currentQuestionIndex + 1;
@@ -565,7 +674,7 @@
                 leaderboard.appendChild(item);
             });
 
-            if (currentQuestionIndex < questions.length - 1) {
+            if (currentQuestionIndex < gameQuestions.length - 1) {
                 document.getElementById('nextQuestionBtn').classList.remove('hidden');
                 document.getElementById('showFinalBtn').classList.add('hidden');
             } else {
@@ -576,7 +685,7 @@
 
         function nextQuestion() {
             currentQuestionIndex++;
-            if (currentQuestionIndex < questions.length) {
+            if (currentQuestionIndex < gameQuestions.length) {
                 document.getElementById('resultsScreen').classList.add('hidden');
                 document.getElementById('gameScreen').classList.remove('hidden');
                 startRound();
