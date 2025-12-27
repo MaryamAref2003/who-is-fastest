@@ -314,7 +314,7 @@
             <div class="timer" id="timer">30</div>
             
             <div class="question-section">
-                <h2>السؤال <span id="questionNumber">1</span> من 10</h2>
+                <h2>السؤال <span id="questionNumber">1</span> من 90</h2>
                 <div class="question-text" id="questionText"></div>
             </div>
 
@@ -480,13 +480,8 @@
             { question: "كم عدد الدول في قارة أمريكا الشمالية؟", answer: 23 }
         ];
 
-        // اختيار 10 أسئلة عشوائية
-        function getRandomQuestions(allQuestions, count) {
-            const shuffled = [...allQuestions].sort(() => Math.random() - 0.5);
-            return shuffled.slice(0, count);
-        }
-
-        const gameQuestions = getRandomQuestions(questions, 10);
+        // استخدام جميع الأسئلة (90 سؤال)
+        const gameQuestions = questions;
 
         window.onload = function() {
             document.getElementById('gameCode').textContent = gameId;
