@@ -314,7 +314,7 @@
             <div class="timer" id="timer">30</div>
             
             <div class="question-section">
-                <h2>السؤال <span id="questionNumber">1</span> من 90</h2>
+                <h2>السؤال <span id="questionNumber">1</span> من 88</h2>
                 <div class="question-text" id="questionText"></div>
             </div>
 
@@ -329,6 +329,12 @@
         </div>
 
         <div id="resultsScreen" class="screen hidden">
+            <div class="qr-section" style="margin-bottom: 2rem;">
+                <h3 style="font-size: 1.5rem; color: var(--electric-blue); margin-bottom: 1rem;">للاعبين الجدد - امسح للانضمام</h3>
+                <div id="qrcodeResults" style="display: inline-block; padding: 1rem; background: white; border-radius: 10px;"></div>
+                <div style="color: var(--neon-green); font-size: 1.2rem; margin-top: 0.5rem;">الكود: <span id="gameCodeResults"></span></div>
+            </div>
+
             <div class="question-section">
                 <h2>النتائج - السؤال <span id="resultsQuestionNumber">1</span></h2>
                 <div class="question-text" id="resultsQuestion"></div>
@@ -368,8 +374,6 @@
 
         const questions = [
             // جسم الإنسان
-            { question: "كم عدد عظام جسم الإنسان البالغ؟", answer: 206 },
-            { question: "كم عدد عضلات جسم الإنسان تقريبًا؟", answer: 650 },
             { question: "كم عدد الكروموسومات عند الإنسان؟", answer: 46 },
             { question: "كم عدد فقرات العمود الفقري؟", answer: 33 },
             { question: "كم عدد صمامات القلب؟", answer: 4 },
@@ -502,6 +506,18 @@
                     colorLight: "#ffffff",
                     correctLevel: QRCode.CorrectLevel.H
                 });
+                
+                // Generate QR Code for results screen
+                new QRCode(document.getElementById("qrcodeResults"), {
+                    text: joinUrl,
+                    width: 200,
+                    height: 200,
+                    colorDark: "#1A0B2E",
+                    colorLight: "#ffffff",
+                    correctLevel: QRCode.CorrectLevel.H
+                });
+                
+                document.getElementById('gameCodeResults').textContent = gameId;
             } catch(e) {
                 console.error('QR Code error:', e);
                 document.getElementById('qrcode').innerHTML = '<p style="color: #FF006B;">خطأ في تحميل QR Code</p>';
